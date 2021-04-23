@@ -17,12 +17,14 @@ class Crop(object):
             self.output_size = output_size
 
     def __call__(self, sample):
-        image, label = sample['image'], sample['label']
+        image, label, events = sample['image'], sample['label'], sample['event']
         top, left = sample['top'], sample['left']
         new_h, new_w = self.output_size
         sample['image'] = image[top: top + new_h,
                           left: left + new_w]
         sample['label'] = label[top: top + new_h,
+                          left: left + new_w]
+        sample['event'] = events[top: top + new_h,
                           left: left + new_w]
 
         return sample
@@ -39,9 +41,11 @@ class Flip(object):
         if flag_lr == 1:
             sample['image'] = np.fliplr(sample['image'])
             sample['label'] = np.fliplr(sample['label'])
+            sample['event'] = np.fliplr(sample['event'])
         if flag_ud == 1:
             sample['image'] = np.flipud(sample['image'])
             sample['label'] = np.flipud(sample['label'])
+            sample['event'] = np.flipud(sample['event'])
 
         return sample
 
@@ -74,14 +78,16 @@ class ToTensor(object):
     """
 
     def __call__(self, sample):
-        image, label = sample['image'], sample['label']
+        image, label, event = sample['image'], sample['label'], sample['event']
         # swap color axis because
         # numpy image: H x W x C
         # torch image: C X H X W
         image = np.ascontiguousarray(image.transpose((2, 0, 1))[np.newaxis, :])
         label = np.ascontiguousarray(label.transpose((2, 0, 1))[np.newaxis, :])
+        event = np.ascontiguousarray(event.transpose((2, 0, 1))[np.newaxis, :])
         sample['image'] = torch.from_numpy(image).float()
         sample['label'] = torch.from_numpy(label).float()
+        sample['event'] = torch.from_numpy(event).float()
         return sample
 
 
